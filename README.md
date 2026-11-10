@@ -18,7 +18,7 @@ PAW-Project-ZenQ/
 └── README.md             # Dokumentasi proyek
 ```
 
-## Daftar Endpoint CRUD (Read / GET)
+## Daftar Endpoint CRUD
 
 ### 1. Web View (Frontend)
 - `GET /` — Menampilkan katalog seluruh produk (homepage).
@@ -28,6 +28,11 @@ PAW-Project-ZenQ/
 - `GET /api/status` — Cek status server API.
 - `GET /api/produk` — Mengambil seluruh data produk (mendukung filter query `?kategori=...` dan `?search=...`).
 - `GET /api/produk/:id` — Mengambil data 1 produk berdasarkan ID (mengembalikan status `200` jika ditemukan, atau `404` jika tidak ada).
+- `POST /api/produk` — Menambahkan produk baru (field `nama` wajib diisi).
+- `PUT /api/produk/:id` — Memperbarui produk berdasarkan ID.
+- `DELETE /api/produk/:id` — Menghapus produk berdasarkan ID.
+
+Data produk saat ini disimpan di memori aplikasi, sehingga kembali ke data awal ketika server dijalankan ulang.
 
 ## Instalasi dan Menjalankan Aplikasi
 ```bash
