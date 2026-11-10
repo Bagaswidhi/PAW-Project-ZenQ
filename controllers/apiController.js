@@ -11,7 +11,8 @@ const getStatus = (req, res) => {
 
 const getProducts = (req, res) => {
   try {
-    const data = ProductModel.getAll();
+    const { kategori, search } = req.query;
+    const data = ProductModel.getAll({ kategori, search });
     res.status(200).json({
       status: "success",
       total: data.length,
@@ -25,7 +26,32 @@ const getProducts = (req, res) => {
   }
 };
 
+const getProductById = (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = ProductModel.getById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        status: "fail",
+        message: `Produk dengan ID ${id} tidak ditemukan`
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: product
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Gagal mengambil detail produk"
+    });
+  }
+};
+
 module.exports = {
   getStatus,
-  getProducts
+  getProducts,
+  getProductById
 };

@@ -54,8 +54,26 @@ const products = [
 ];
 
 class ProductModel {
-  static getAll() {
-    return products;
+  static getAll(filters = {}) {
+    let result = products;
+
+    if (filters && filters.kategori) {
+      result = result.filter(
+        p => p.kategori.toLowerCase() === filters.kategori.toLowerCase()
+      );
+    }
+
+    if (filters && filters.search) {
+      const keyword = filters.search.toLowerCase();
+      result = result.filter(
+        p =>
+          p.nama.toLowerCase().includes(keyword) ||
+          p.deskripsi.toLowerCase().includes(keyword) ||
+          p.prosesor.toLowerCase().includes(keyword)
+      );
+    }
+
+    return result;
   }
 
   static getById(id) {

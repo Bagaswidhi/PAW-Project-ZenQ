@@ -29,5 +29,6 @@ app.listen(config.PORT, () => {
   console.log(`🌐 Frontend  : http://localhost:${config.PORT}`);
   console.log(`🔌 API Status: http://localhost:${config.PORT}/api/status`);
   console.log(`🔌 API Produk: http://localhost:${config.PORT}/api/produk`);
+  console.log(`🔌 API Detail: http://localhost:${config.PORT}/api/produk/1`);
   console.log(`===============================================`);
 });
