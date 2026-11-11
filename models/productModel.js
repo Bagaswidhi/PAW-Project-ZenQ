@@ -1,118 +1,73 @@
-const products = [
-  {
-    id: 1,
-    nama: "Lenovo IdeaPad Slim 3",
-    kategori: "Laptop Kuliah",
-    prosesor: "Intel Core i3",
-    ram: "8GB",
-    storage: "512GB SSD",
-    harga: 7299000,
-    rating: 4.8,
-    terjual: 120,
-    stok: 15,
-    deskripsi: "Baterai tahan 8 jam & keyboard nyaman untuk ngetik lama."
-  },
-  {
-    id: 2,
-    nama: "ASUS Vivobook Go 14",
-    kategori: "Laptop Kuliah",
-    prosesor: "AMD Ryzen 3",
-    ram: "8GB",
-    storage: "512GB SSD",
-    harga: 6899000,
-    rating: 4.7,
-    terjual: 85,
-    stok: 10,
-    deskripsi: "Laptop ringan (1.3 kg), enak dibawa ke kampus."
-  },
-  {
-    id: 3,
-    nama: "Acer Aspire Lite",
-    kategori: "Laptop Kuliah",
-    prosesor: "Intel N100",
-    ram: "8GB",
-    storage: "256GB SSD",
-    harga: 6499000,
-    rating: 4.5,
-    terjual: 45,
-    stok: 8,
-    deskripsi: "Desain simpel dan hemat daya untuk komputasi harian."
-  },
-  {
-    id: 4,
-    nama: "HP Laptop 14",
-    kategori: "Laptop Editing",
-    prosesor: "AMD Ryzen 5",
-    ram: "16GB",
-    storage: "512GB SSD",
-    harga: 8099000,
-    rating: 4.9,
-    terjual: 60,
-    stok: 5,
-    deskripsi: "Performa tinggi untuk multitasking dan editing video ringan."
-  }
-];
+const pool = require('../config/db');
 
 class ProductModel {
-  static getAll(filters = {}) {
-    let result = products;
+  // GET /api/produk - Mendukung filter pencarian
+  static async getAll(filters = {}) {
+    let query = 'SELECT * FROM products WHERE 1=1';
+    const values = [];
+    let paramIndex = 1;
 
+    // Filter by Kategori
     if (filters && filters.kategori) {
-      result = result.filter(
-        p => p.kategori.toLowerCase() === filters.kategori.toLowerCase()
-      );
+      query += ` AND LOWER(kategori) = LOWER($${paramIndex})`;
+      values.push(filters.kategori);
+      paramIndex++;
     }
 
+    // Search by Keyword (nama, deskripsi, atau prosesor)
     if (filters && filters.search) {
-      const keyword = filters.search.toLowerCase();
-      result = result.filter(
-        p =>
-          p.nama.toLowerCase().includes(keyword) ||
-          p.deskripsi.toLowerCase().includes(keyword) ||
-          p.prosesor.toLowerCase().includes(keyword)
-      );
+      query += ` AND (LOWER(nama) LIKE LOWER($${paramIndex}) OR LOWER(deskripsi) LIKE LOWER($${paramIndex}) OR LOWER(prosesor) LIKE LOWER($${paramIndex}))`;
+      values.push(`%${filters.search}%`);
+      paramIndex++;
     }
 
-    return result;
+    query += ' ORDER BY id ASC';
+    const { rows } = await pool.query(query, values);
+    return rows;
   }
 
-  static getById(id) {
-    return products.find(p => p.id === parseInt(id));
+  static async getById(id) {
+    const query = 'SELECT * FROM products WHERE id = $1';
+    const { rows } = await pool.query(query, [id]);
+    return rows[0];
   }
 
-  static create(data) {
-    const nextId = products.reduce((maxId, product) => Math.max(maxId, product.id), 0) + 1;
-    const product = { ...data, id: nextId };
-    products.push(product);
-    return product;
+  static async create(data) {
+    const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi } = data;
+    const query = `
+      INSERT INTO products (nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *
+    `;
+    const values = [
+      nama, kategori, prosesor, ram, storage, Number(harga),
+      rating ? Number(rating) : 4.5, terjual ? Number(terjual) : 0, Number(stok), deskripsi || ''
+    ];
+    const { rows } = await pool.query(query, values);
+    return rows[0];
   }
 
-  static update(id, data) {
-    const productIndex = products.findIndex(p => p.id === parseInt(id));
-
-    if (productIndex === -1) {
-      return null;
-    }
-
-    const updatedProduct = {
-      ...products[productIndex],
-      ...data,
-      id: products[productIndex].id
-    };
-    products[productIndex] = updatedProduct;
-    return updatedProduct;
+  static async update(id, data) {
+    const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi } = data;
+    const query = `
+      UPDATE products
+      SET nama = $1, kategori = $2, prosesor = $3, ram = $4, storage = $5,
+          harga = $6, rating = $7, terjual = $8, stok = $9, deskripsi = $10
+      WHERE id = $11
+      RETURNING *
+    `;
+    const values = [
+      nama, kategori, prosesor, ram, storage, Number(harga),
+      Number(rating), Number(terjual), Number(stok), deskripsi, id
+    ];
+    const { rows } = await pool.query(query, values);
+    return rows[0];
   }
 
-  static delete(id) {
-    const productIndex = products.findIndex(p => p.id === parseInt(id));
-
-    if (productIndex === -1) {
-      return null;
-    }
-
-    const deletedProduct = products[productIndex];
-    products.splice(productIndex, 1);
-    return deletedProduct;
+  static async delete(id) {
+    const query = 'DELETE FROM products WHERE id = $1 RETURNING *';
+    const { rows } = await pool.query(query, [id]);
+    return rows[0];
   }
 }
 
