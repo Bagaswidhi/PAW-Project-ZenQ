@@ -54,12 +54,65 @@ const products = [
 ];
 
 class ProductModel {
-  static getAll() {
-    return products;
+  static getAll(filters = {}) {
+    let result = products;
+
+    if (filters && filters.kategori) {
+      result = result.filter(
+        p => p.kategori.toLowerCase() === filters.kategori.toLowerCase()
+      );
+    }
+
+    if (filters && filters.search) {
+      const keyword = filters.search.toLowerCase();
+      result = result.filter(
+        p =>
+          p.nama.toLowerCase().includes(keyword) ||
+          p.deskripsi.toLowerCase().includes(keyword) ||
+          p.prosesor.toLowerCase().includes(keyword)
+      );
+    }
+
+    return result;
   }
 
   static getById(id) {
     return products.find(p => p.id === parseInt(id));
+  }
+
+  static create(data) {
+    const nextId = products.reduce((maxId, product) => Math.max(maxId, product.id), 0) + 1;
+    const product = { ...data, id: nextId };
+    products.push(product);
+    return product;
+  }
+
+  static update(id, data) {
+    const productIndex = products.findIndex(p => p.id === parseInt(id));
+
+    if (productIndex === -1) {
+      return null;
+    }
+
+    const updatedProduct = {
+      ...products[productIndex],
+      ...data,
+      id: products[productIndex].id
+    };
+    products[productIndex] = updatedProduct;
+    return updatedProduct;
+  }
+
+  static delete(id) {
+    const productIndex = products.findIndex(p => p.id === parseInt(id));
+
+    if (productIndex === -1) {
+      return null;
+    }
+
+    const deletedProduct = products[productIndex];
+    products.splice(productIndex, 1);
+    return deletedProduct;
   }
 }
 
