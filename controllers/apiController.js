@@ -3,34 +3,36 @@ const ProductModel = require('../models/productModel');
 const getStatus = (req, res) => {
   res.status(200).json({
     status: "success",
-    message: "Server ZenQ Store API berjalan aktif",
-    environment: process.env.NODE_ENV || "development",
+    message: "Server ZenQ API berjalan aktif",
+    database: "PostgreSQL",
     timestamp: new Date().toISOString()
   });
 };
 
-const getProducts = (req, res) => {
+const getProducts = async (req, res) => {
   try {
     const { kategori, search } = req.query;
-    const data = ProductModel.getAll({ kategori, search });
+    const products = await ProductModel.getAll({ kategori, search });
+    
     res.status(200).json({
       status: "success",
-      total: data.length,
-      data: data
+      total: products.length,
+      data: products
     });
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: "Gagal mengambil data produk"
+      message: "Gagal mengambil data produk dari database",
+      error: error.message
     });
   }
 };
 
-const getProductById = (req, res) => {
+const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = ProductModel.getById(id);
-
+    const product = await ProductModel.getById(id);
+    
     if (!product) {
       return res.status(404).json({
         status: "fail",
@@ -45,90 +47,92 @@ const getProductById = (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: "Gagal mengambil detail produk"
+      message: "Gagal mengambil detail produk",
+      error: error.message
     });
   }
 };
 
-const getProductId = req => Number(req.params.id);
+// POST /api/produk
+const createProduct = async (req, res) => {
+  try {
+    const { nama, kategori, prosesor, ram, storage, harga, stok } = req.body;
 
-const isValidProductId = id => Number.isInteger(id) && id > 0;
+    if (!nama || !kategori || !harga || !stok) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Field nama, kategori, harga, dan stok wajib diisi"
+      });
+    }
 
-const isValidBody = body => body && typeof body === "object" && !Array.isArray(body);
-
-const createProduct = (req, res) => {
-  if (!isValidBody(req.body) || !req.body.nama) {
-    return res.status(400).json({
+    const newProduct = await ProductModel.create(req.body);
+    res.status(201).json({
+      status: "success",
+      message: "Produk berhasil ditambahkan ke database",
+      data: newProduct
+    });
+  } catch (error) {
+    res.status(500).json({
       status: "error",
-      message: "Field nama wajib diisi"
+      message: "Gagal menambah produk",
+      error: error.message
     });
   }
-
-  const product = ProductModel.create(req.body);
-  return res.status(201).json({
-    status: "success",
-    message: "Produk berhasil ditambahkan",
-    data: product
-  });
 };
 
-const updateProduct = (req, res) => {
-  const id = getProductId(req);
+// PUT /api/produk/:id
+const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = await ProductModel.getById(id);
 
-  if (!isValidProductId(id)) {
-    return res.status(400).json({
+    if (!existing) {
+      return res.status(404).json({
+        status: "fail",
+        message: `Produk dengan ID ${id} tidak ditemukan`
+      });
+    }
+
+    const updatedProduct = await ProductModel.update(id, { ...existing, ...req.body });
+    res.status(200).json({
+      status: "success",
+      message: "Data produk berhasil diperbarui",
+      data: updatedProduct
+    });
+  } catch (error) {
+    res.status(500).json({
       status: "error",
-      message: "ID produk tidak valid"
+      message: "Gagal memperbarui produk",
+      error: error.message
     });
   }
-
-  if (!isValidBody(req.body) || Object.keys(req.body).length === 0) {
-    return res.status(400).json({
-      status: "error",
-      message: "Data produk wajib diisi"
-    });
-  }
-
-  const product = ProductModel.update(id, req.body);
-
-  if (!product) {
-    return res.status(404).json({
-      status: "error",
-      message: "Produk tidak ditemukan"
-    });
-  }
-
-  return res.status(200).json({
-    status: "success",
-    message: "Produk berhasil diperbarui",
-    data: product
-  });
 };
 
-const deleteProduct = (req, res) => {
-  const id = getProductId(req);
+// DELETE /api/produk/:id
+const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedProduct = await ProductModel.delete(id);
 
-  if (!isValidProductId(id)) {
-    return res.status(400).json({
+    if (!deletedProduct) {
+      return res.status(404).json({
+        status: "fail",
+        message: `Produk dengan ID ${id} tidak ditemukan`
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Produk berhasil dihapus dari database",
+      data: deletedProduct
+    });
+  } catch (error) {
+    res.status(500).json({
       status: "error",
-      message: "ID produk tidak valid"
+      message: "Gagal menghapus produk",
+      error: error.message
     });
   }
-
-  const product = ProductModel.delete(id);
-
-  if (!product) {
-    return res.status(404).json({
-      status: "error",
-      message: "Produk tidak ditemukan"
-    });
-  }
-
-  return res.status(200).json({
-    status: "success",
-    message: "Produk berhasil dihapus",
-    data: product
-  });
 };
 
 module.exports = {
