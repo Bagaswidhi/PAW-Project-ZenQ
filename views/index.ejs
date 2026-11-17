@@ -1,10 +1,17 @@
 
 
-                    <!-- Tombol Tambah Produk -->
-                    <button onclick="openAddModal()" class="w-full sm:w-auto bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-2 px-6 rounded-lg text-sm transition shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2">
-                        ➕ Tambah
-                    </button>
-                </div>
+            <!-- Filter Kategori (Pills) -->
+            <div class="flex flex-wrap gap-2 items-center pt-2">
+                <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider mr-1">Kategori:</span>
+                <% const categories = ['Semua', 'Laptop Kuliah', 'Laptop Editing', 'Laptop Gaming']; %>
+                <% categories.forEach(cat => { %>
+                    <% const isActive = (typeof currentKategori !== 'undefined' ? currentKategori : 'Semua') === cat; %>
+                    <a href="/?kategori=<%= encodeURIComponent(cat) %><%= typeof searchQuery !== 'undefined' && searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>"
+                       class="text-xs px-3.5 py-1.5 rounded-full font-medium transition <%= isActive ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/20' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700/60' %>">
+                        <%= cat %>
+                    </a>
+                <% }); %>
             </div>
+        </section>
 
-         
+       
