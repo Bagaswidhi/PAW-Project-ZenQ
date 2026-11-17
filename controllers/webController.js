@@ -1,13 +1,15 @@
 const ProductModel = require('../models/productModel');
+const { cleanBody, validateProduct } = require('../utils/validateProduct');
+const { removeImage, uploadedPath } = require('../utils/filehelper');
 
 const renderHomePage = async (req, res) => {
   try {
     // Tangkap query search dan kategori dari URL browser
     const { search, kategori } = req.query;
-    
+
     // Lempar query tersebut ke Model
     const products = await ProductModel.getAll({ search, kategori });
-    
+
     res.render('index', {
       title: 'ZenQ - Teman Pilih Laptop',
       products: products,
@@ -23,7 +25,7 @@ const renderDetailPage = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await ProductModel.getById(id);
-    
+
     if (!product) {
       return res.status(404).render('404', {
         title: 'Produk Tidak Ditemukan - ZenQ Store',
@@ -41,20 +43,48 @@ const renderDetailPage = async (req, res) => {
 };
 
 const handleCreateProduct = async (req, res) => {
+  const gambar = uploadedPath(req);
   try {
-    await ProductModel.create(req.body);
+    const data = cleanBody(req.body);
+    const errors = validateProduct(data);
+
+    if (errors.length > 0) {
+      removeImage(gambar);
+      return res.status(400).send("Data tidak valid: " + errors.join(', '));
+    }
+
+    await ProductModel.create({ ...data, gambar });
     res.redirect('/');
   } catch (error) {
+    removeImage(gambar);
     res.status(500).send("Gagal menambah produk: " + error.message);
   }
 };
 
 const handleUpdateProduct = async (req, res) => {
+  const newImage = uploadedPath(req);
   try {
     const { id } = req.params;
-    await ProductModel.update(id, req.body);
+    const existing = await ProductModel.getById(id);
+
+    if (!existing) {
+      removeImage(newImage);
+      return res.status(404).send(`Produk dengan ID ${id} tidak ditemukan`);
+    }
+
+    const merged = { ...existing, ...cleanBody(req.body), gambar: newImage || existing.gambar };
+    const errors = validateProduct(merged);
+
+    if (errors.length > 0) {
+      removeImage(newImage);
+      return res.status(400).send("Data tidak valid: " + errors.join(', '));
+    }
+
+    await ProductModel.update(id, merged);
+    if (newImage) removeImage(existing.gambar); // hapus gambar lama setelah berhasil diganti
     res.redirect('/');
   } catch (error) {
+    removeImage(newImage);
     res.status(500).send("Gagal memperbarui produk: " + error.message);
   }
 };
@@ -62,7 +92,8 @@ const handleUpdateProduct = async (req, res) => {
 const handleDeleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    await ProductModel.delete(id);
+    const deleted = await ProductModel.delete(id);
+    if (deleted) removeImage(deleted.gambar);
     res.redirect('/');
   } catch (error) {
     res.status(500).send("Gagal menghapus produk: " + error.message);

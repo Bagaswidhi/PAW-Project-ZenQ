@@ -17,6 +17,10 @@ coverage/
 .vite/
 .cache/
 
+# Gambar hasil upload (folder dipertahankan lewat .gitkeep)
+public/uploads/*
+!public/uploads/.gitkeep
+
 # Logs
 *.log
 npm-debug.log*

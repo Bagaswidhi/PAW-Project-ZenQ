@@ -166,12 +166,12 @@
     <div id="addModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur flex items-center justify-center p-4 z-50">
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-2xl w-full">
             <h3 class="text-xl font-bold text-cyan-400 mb-4 border-b border-slate-700 pb-3">➕ Tambah Produk Baru</h3>
-            <form action="/produk/add" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <form action="/produk/add" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <input type="text" name="nama" placeholder="Nama Produk" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
                 <input type="text" name="kategori" placeholder="Kategori (mis: Laptop Kuliah)" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
-                <input type="text" name="prosesor" placeholder="Prosesor (Mis: Intel i5)" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
+                <input type="text" name="prosesor" placeholder="Prosesor (mis: Intel i5)" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
                 <input type="text" name="ram" placeholder="RAM (mis: 8GB)" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
-                <input type="text" name="storage" placeholder="Storage (Mis: 512GB SSD)" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
+                <input type="text" name="storage" placeholder="Storage (mis: 512GB SSD)" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
                 <input type="number" name="harga" placeholder="Harga (Rp)" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
                 <input type="number" name="stok" placeholder="Stok" required class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:border-cyan-400 focus:outline-none">
                 <div class="grid grid-cols-2 gap-4">
@@ -205,7 +205,6 @@
                     <input type="number" id="editTerjual" name="terjual" class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white">
                 </div>
                 <textarea id="editDeskripsi" name="deskripsi" class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white md:col-span-2 h-20"></textarea>
-
                 <div class="md:col-span-2 flex justify-end gap-3 mt-4 border-t border-slate-700 pt-4">
                     <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg font-bold transition">Batal</button>
                     <button type="submit" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-lg font-bold transition">Simpan Perubahan</button>
