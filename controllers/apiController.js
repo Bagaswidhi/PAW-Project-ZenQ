@@ -1,6 +1,5 @@
 const ProductModel = require('../models/productModel');
-const { cleanBody, validateProduct } = require('../utils/validateProduct');
-const { removeImage, uploadedPath } = require('../utils/filehelper');
+const { cleanBody, validateProduct } = require('../utils/validateProducts');
 
 const getStatus = (req, res) => {
   res.status(200).json({
@@ -74,7 +73,6 @@ const createProduct = async (req, res) => {
       data: newProduct
     });
   } catch (error) {
-    removeImage(gambar);
     res.status(500).json({
       status: "error",
       message: "Gagal menambah produk",
@@ -83,26 +81,23 @@ const createProduct = async (req, res) => {
   }
 };
 
-// PUT /api/produk/:id (JSON atau multipart/form-data dengan field file "gambar")
+// PUT /api/produk/:id
 const updateProduct = async (req, res) => {
-  const newImage = uploadedPath(req);
   try {
     const { id } = req.params;
     const existing = await ProductModel.getById(id);
 
     if (!existing) {
-      removeImage(newImage);
       return res.status(404).json({
         status: "fail",
         message: `Produk dengan ID ${id} tidak ditemukan`
       });
     }
 
-    const merged = { ...existing, ...cleanBody(req.body), gambar: newImage || existing.gambar };
+    const merged = { ...existing, ...cleanBody(req.body) };
     const errors = validateProduct(merged);
 
     if (errors.length > 0) {
-      removeImage(newImage);
       return res.status(400).json({
         status: "fail",
         message: errors.join(', ')
@@ -110,7 +105,6 @@ const updateProduct = async (req, res) => {
     }
 
     const updatedProduct = await ProductModel.update(id, merged);
-    if (newImage) removeImage(existing.gambar); // hapus gambar lama setelah berhasil diganti
 
     res.status(200).json({
       status: "success",
@@ -118,7 +112,6 @@ const updateProduct = async (req, res) => {
       data: updatedProduct
     });
   } catch (error) {
-    removeImage(newImage);
     res.status(500).json({
       status: "error",
       message: "Gagal memperbarui produk",
@@ -139,8 +132,6 @@ const deleteProduct = async (req, res) => {
         message: `Produk dengan ID ${id} tidak ditemukan`
       });
     }
-
-    removeImage(deletedProduct.gambar);
 
     res.status(200).json({
       status: "success",

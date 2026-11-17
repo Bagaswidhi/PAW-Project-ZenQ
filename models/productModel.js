@@ -33,33 +33,32 @@ class ProductModel {
   }
 
   static async create(data) {
-    const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi, gambar } = data;
+    const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi } = data;
     const query = `
-      INSERT INTO products (nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi, gambar)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      INSERT INTO products (nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
     const values = [
       nama, kategori, prosesor, ram, storage, Number(harga),
-      rating ? Number(rating) : 4.5, terjual ? Number(terjual) : 0, Number(stok), deskripsi || '',
-      gambar || null
+      rating ? Number(rating) : 4.5, terjual ? Number(terjual) : 0, Number(stok), deskripsi || ''
     ];
     const { rows } = await pool.query(query, values);
     return rows[0];
   }
 
   static async update(id, data) {
-    const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi, gambar } = data;
+    const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi } = data;
     const query = `
       UPDATE products
       SET nama = $1, kategori = $2, prosesor = $3, ram = $4, storage = $5,
-          harga = $6, rating = $7, terjual = $8, stok = $9, deskripsi = $10, gambar = $11
-      WHERE id = $12
+          harga = $6, rating = $7, terjual = $8, stok = $9, deskripsi = $10
+      WHERE id = $11
       RETURNING *
     `;
     const values = [
       nama, kategori, prosesor, ram, storage, Number(harga),
-      Number(rating), Number(terjual), Number(stok), deskripsi, gambar || null, id
+      Number(rating), Number(terjual), Number(stok), deskripsi, id
     ];
     const { rows } = await pool.query(query, values);
     return rows[0];
