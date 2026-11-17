@@ -8,7 +8,7 @@ class ProductModel {
     let paramIndex = 1;
 
     // Filter by Kategori
-    if (filters && filters.kategori) {
+    if (filters && filters.kategori && filters.kategori.toLowerCase() !== 'semua') {
       query += ` AND LOWER(kategori) = LOWER($${paramIndex})`;
       values.push(filters.kategori);
       paramIndex++;

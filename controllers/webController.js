@@ -3,16 +3,17 @@ const { cleanBody, validateProduct } = require('../utils/validateProducts');
 
 const renderHomePage = async (req, res) => {
   try {
-    // Tangkap query search dari URL browser
-    const { search } = req.query;
-    
+    // Tangkap query search dan kategori dari URL browser
+    const { search, kategori } = req.query;
+
     // Lempar query tersebut ke Model
-    const products = await ProductModel.getAll({ search });
-    
+    const products = await ProductModel.getAll({ search, kategori });
+
     res.render('index', {
       title: 'ZenQ - Teman Pilih Laptop',
       products: products,
-      searchQuery: search || '' // Kirim kata kunci kembali ke view agar teks tidak hilang dari input
+      searchQuery: search || '', // Kirim kata kunci kembali ke view agar teks tidak hilang dari input
+      currentKategori: kategori || 'Semua'
     });
   } catch (error) {
     res.status(500).send("Gagal memuat halaman: " + error.message);
