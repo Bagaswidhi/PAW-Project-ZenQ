@@ -1,6 +1,5 @@
 const ProductModel = require('../models/productModel');
-const { cleanBody, validateProduct } = require('../utils/validateProduct');
-const { removeImage, uploadedPath } = require('../utils/filehelper');
+const { cleanBody, validateProduct } = require('../utils/validateProducts');
 
 // GET /api/status
 const getStatus = (req, res) => {
@@ -57,29 +56,25 @@ const getProductById = async (req, res) => {
   }
 };
 
-// POST /api/produk (JSON atau multipart/form-data dengan field file "gambar")
+// POST /api/produk
 const createProduct = async (req, res) => {
-  const gambar = uploadedPath(req);
   try {
-    const data = cleanBody(req.body);
-    const errors = validateProduct(data);
+    const { nama, kategori, prosesor, ram, storage, harga, stok } = req.body;
 
-    if (errors.length > 0) {
-      removeImage(gambar);
+    if (!nama || !kategori || !harga || !stok) {
       return res.status(400).json({
         status: "fail",
-        message: errors.join(', ')
+        message: "Field nama, kategori, harga, dan stok wajib diisi"
       });
     }
 
-    const newProduct = await ProductModel.create({ ...data, gambar });
+    const newProduct = await ProductModel.create(req.body);
     res.status(201).json({
       status: "success",
       message: "Produk berhasil ditambahkan ke database",
       data: newProduct
     });
   } catch (error) {
-    removeImage(gambar);
     res.status(500).json({
       status: "error",
       message: "Gagal menambah produk",
@@ -88,26 +83,23 @@ const createProduct = async (req, res) => {
   }
 };
 
-// PUT /api/produk/:id (JSON atau multipart/form-data dengan field file "gambar")
+// PUT /api/produk/:id
 const updateProduct = async (req, res) => {
-  const newImage = uploadedPath(req);
   try {
     const { id } = req.params;
     const existing = await ProductModel.getById(id);
 
     if (!existing) {
-      removeImage(newImage);
       return res.status(404).json({
         status: "fail",
         message: `Produk dengan ID ${id} tidak ditemukan`
       });
     }
 
-    const merged = { ...existing, ...cleanBody(req.body), gambar: newImage || existing.gambar };
+    const merged = { ...existing, ...cleanBody(req.body) };
     const errors = validateProduct(merged);
 
     if (errors.length > 0) {
-      removeImage(newImage);
       return res.status(400).json({
         status: "fail",
         message: errors.join(', ')
@@ -115,7 +107,6 @@ const updateProduct = async (req, res) => {
     }
 
     const updatedProduct = await ProductModel.update(id, merged);
-    if (newImage) removeImage(existing.gambar); // hapus gambar lama setelah berhasil diganti
 
     res.status(200).json({
       status: "success",
@@ -123,7 +114,6 @@ const updateProduct = async (req, res) => {
       data: updatedProduct
     });
   } catch (error) {
-    removeImage(newImage);
     res.status(500).json({
       status: "error",
       message: "Gagal memperbarui produk",
@@ -144,8 +134,6 @@ const deleteProduct = async (req, res) => {
         message: `Produk dengan ID ${id} tidak ditemukan`
       });
     }
-
-    removeImage(deletedProduct.gambar);
 
     res.status(200).json({
       status: "success",

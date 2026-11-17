@@ -1,3 +1,6 @@
+-- Jalankan: psql -U postgres -d zenq_db -f schema.sql
+-- Aman dijalankan berulang kali (data awal di-reset, tidak terduplikasi).
+
 CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
     nama VARCHAR(150) NOT NULL,
@@ -12,6 +15,9 @@ CREATE TABLE IF NOT EXISTS products (
     deskripsi TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Reset data awal agar tidak terduplikasi saat file ini dijalankan ulang
+TRUNCATE TABLE products RESTART IDENTITY;
 
 INSERT INTO products (nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi) VALUES
 ('Lenovo IdeaPad Slim 3', 'Laptop Kuliah', 'Intel Core i3', '8GB', '512GB SSD', 7299000.00, 4.8, 120, 15, 'Baterai tahan 8 jam & keyboard nyaman untuk ngetik lama.'),
