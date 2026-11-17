@@ -1,0 +1,103 @@
+<!-- ZenQ AI Assistant (Week 9) -->
+<button id="chatToggle" type="button" aria-label="Buka ZenQ AI Assistant"
+    class="fixed bottom-5 right-5 z-50 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-full shadow-lg shadow-cyan-500/30 px-5 py-3 text-sm transition">
+    &#129302; Tanya AI
+</button>
+
+<section id="chatPanel"
+    class="hidden fixed z-50 bottom-20 right-5 left-5 sm:left-auto sm:w-96 h-[70vh] sm:h-[32rem] bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+
+    <header class="flex items-center justify-between bg-slate-900 px-4 py-3 border-b border-slate-700">
+        <div>
+            <p class="font-bold text-cyan-400 text-sm">ZenQ AI Assistant</p>
+            <p class="text-xs text-slate-400">Tanya seputar laptop di ZenQ Store</p>
+        </div>
+        <button id="chatClose" type="button" aria-label="Tutup" class="text-slate-400 hover:text-white text-lg">&#10005;</button>
+    </header>
+
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
+        <div class="max-w-[85%] bg-slate-700 text-slate-100 rounded-2xl rounded-bl-sm px-3 py-2">
+            Halo! Saya ZenQ AI Assistant &#128075; Ceritakan kebutuhan dan budget kamu, nanti saya bantu pilihkan laptopnya.
+        </div>
+    </div>
+
+    <form id="chatForm" class="flex gap-2 p-3 border-t border-slate-700 bg-slate-900">
+        <label for="chatInput" class="sr-only">Pertanyaan</label>
+        <input id="chatInput" type="text" maxlength="500" autocomplete="off"
+            placeholder="Contoh: laptop kuliah budget 7 juta?"
+            class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:border-cyan-400 focus:outline-none">
+        <button id="chatSend" type="submit"
+            class="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold rounded-lg px-4 text-sm transition">Kirim</button>
+    </form>
+</section>
+
+<script>
+(function () {
+    const toggleBtn = document.getElementById('chatToggle');
+    const closeBtn = document.getElementById('chatClose');
+    const panel = document.getElementById('chatPanel');
+    const form = document.getElementById('chatForm');
+    const input = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('chatSend');
+    const messages = document.getElementById('chatMessages');
+    const WARN = '\u26A0\uFE0F ';
+
+    toggleBtn.addEventListener('click', () => {
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) input.focus();
+    });
+    closeBtn.addEventListener('click', () => panel.classList.add('hidden'));
+
+    // Buat gelembung chat. Pakai textContent (bukan innerHTML) agar aman dari XSS.
+    function addBubble(role, text) {
+        const bubble = document.createElement('div');
+        const base = 'max-w-[85%] rounded-2xl px-3 py-2 whitespace-pre-wrap break-words ';
+        bubble.className = role === 'user'
+            ? base + 'ml-auto bg-cyan-500 text-slate-950 rounded-br-sm'
+            : base + 'bg-slate-700 text-slate-100 rounded-bl-sm';
+        bubble.textContent = text;
+        messages.appendChild(bubble);
+        messages.scrollTop = messages.scrollHeight;
+        return bubble;
+    }
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        addBubble('user', text);
+        input.value = '';
+        sendBtn.disabled = true;
+        input.disabled = true;
+
+        const loadingBubble = addBubble('ai', 'Sedang mengetik...');
+        loadingBubble.classList.add('animate-pulse');
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const json = await res.json();
+            loadingBubble.classList.remove('animate-pulse');
+
+            if (res.ok && json.success) {
+                loadingBubble.textContent = json.data.reply;
+            } else {
+                loadingBubble.textContent = WARN + (json.message || 'Terjadi kesalahan, coba lagi.');
+                loadingBubble.classList.add('text-rose-300');
+            }
+        } catch (err) {
+            loadingBubble.classList.remove('animate-pulse');
+            loadingBubble.textContent = WARN + 'Gagal terhubung ke server. Periksa koneksi kamu.';
+            loadingBubble.classList.add('text-rose-300');
+        } finally {
+            sendBtn.disabled = false;
+            input.disabled = false;
+            input.focus();
+        }
+    });
+})();
+</script>
