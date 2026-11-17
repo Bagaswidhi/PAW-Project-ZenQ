@@ -1,50 +1,62 @@
 // Guardrail sisi backend: memeriksa pesan SEBELUM dikirim ke Gemini.
 const { MAX_MESSAGE_LENGTH } = require('../config/gemini');
 
-// Pola umum prompt injection (Indonesia & Inggris)
 const INJECTION_PATTERNS = [
-  /(abaikan|lupakan|hiraukan|kesampingkan).{0,30}(instruksi|perintah|aturan|prompt)/i,
-  /ignore.{0,30}(previous|above|all|prior|system).{0,30}(instruction|prompt|rule)/i,
-  /(system|developer)\s*(prompt|instruction|message)/i,
-  /(tampilkan|bocorkan|tunjukkan|ungkap|reveal|show|print).{0,30}(prompt|instruksi|instruction)/i,
-  /(kamu|anda)\s+(sekarang\s+)?(adalah|menjadi|berperan)/i,
-  /you\s+are\s+now/i,
-  /(pura-pura|berpura-pura|pretend|roleplay|act\s+as)/i,
-  /\b(jailbreak|DAN mode|developer mode)\b/i
+  /ignore\s+(all\s+)?previous\s+instructions/i,
+  /abaikan\s+(semua\s+)?instruksi/i,
+  /system\s*prompt/i,
+  /jailbreak/i,
+  /act\s+as\s+(?!customer|pembeli)/i,
+  /berpura-pura\s+menjadi/i
 ];
 
 const validateChatInput = (req, res, next) => {
-  const { message } = req.body || {};
+  const { message, history } = req.body || {};
 
-  // 1. Harus berupa teks
-  if (typeof message !== 'string') {
-    return res.status(400).json({ success: false, message: 'Field "message" wajib berupa teks.' });
-  }
-
-  const cleaned = message.trim();
-
-  // 2. Tidak boleh kosong
-  if (cleaned.length === 0) {
-    return res.status(400).json({ success: false, message: 'Pesan tidak boleh kosong.' });
-  }
-
-  // 3. Batas panjang
-  if (cleaned.length > MAX_MESSAGE_LENGTH) {
+  if (!message || typeof message !== 'string' || message.trim().length === 0) {
     return res.status(400).json({
       success: false,
-      message: `Pesan terlalu panjang. Maksimal ${MAX_MESSAGE_LENGTH} karakter.`
+      message: 'Pesan tidak boleh kosong.'
     });
   }
 
-  // 4. Deteksi prompt injection
-  if (INJECTION_PATTERNS.some((pattern) => pattern.test(cleaned))) {
+  const trimmed = message.trim();
+
+  if (trimmed.length > MAX_MESSAGE_LENGTH) {
     return res.status(400).json({
       success: false,
-      message: 'Pesan ditolak. Silakan tanyakan seputar laptop di ZenQ Store.'
+      message: `Pesan terlalu panjang (maksimal ${MAX_MESSAGE_LENGTH} karakter).`
     });
   }
 
-  req.body.message = cleaned;
+  const isInjection = INJECTION_PATTERNS.some((pattern) => pattern.test(trimmed));
+  if (isInjection) {
+    return res.status(400).json({
+      success: false,
+      message: 'Permintaan tidak valid. Silakan ajukan pertanyaan seputar produk laptop ZenQ Store.'
+    });
+  }
+
+  // Sanitasi riwayat percakapan multi-turn (maksimal 6 pesan terakhir)
+  let safeHistory = [];
+  if (Array.isArray(history)) {
+    safeHistory = history
+      .filter(
+        (item) =>
+          item &&
+          (item.role === 'user' || item.role === 'model') &&
+          typeof item.text === 'string' &&
+          item.text.trim().length > 0
+      )
+      .slice(-6)
+      .map((item) => ({
+        role: item.role,
+        text: item.text.trim().slice(0, MAX_MESSAGE_LENGTH)
+      }));
+  }
+
+  req.body.message = trimmed;
+  req.body.history = safeHistory;
   next();
 };
 
