@@ -1,24 +1,28 @@
 
 
-    <!-- Header Section -->
-    <header class="max-w-6xl mx-auto px-6 py-12 text-center">
-        <span class="bg-cyan-500/10 text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider border border-cyan-500/20">
-            Express.js • PostgreSQL • Google Gemini AI
-        </span>
-        <h1 class="text-4xl md:text-5xl font-extrabold mt-4 mb-4 text-white tracking-tight">
-            TOKO KOMPUTER, TEMAN PILIH LAPTOP
-        </h1>
-        <p class="text-slate-400 max-w-2xl mx-auto text-base md:text-lg mb-6">
-            Cari Laptop Kuliah Sesuai Budget Tanpa Bingung Spesifikasi. Tanyakan langsung ke ZenQ AI Assistant untuk rekomendasi instan.
-        </p>
-        <div class="flex justify-center gap-3">
-            <button onclick="toggleChat()" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm transition shadow-lg shadow-cyan-500/25 flex items-center gap-2">
-                <span>🤖</span> Konsultasi ke ZenQ AI
-            </button>
-            <a href="#katalog" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold px-6 py-2.5 rounded-xl text-sm transition border border-slate-700">
-                Lihat Katalog
-            </a>
-        </div>
-    </header>
+    <!-- Main Content -->
+    <main id="katalog" class="max-w-6xl mx-auto px-6 pb-16 flex-grow w-full space-y-6">
+        
+        <!-- Bagian Judul, Pencarian, dan Tombol Tambah -->
+        <section class="border-b border-slate-700/60 pb-6 space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h2 class="text-2xl font-bold text-slate-100 border-l-4 border-cyan-400 pl-3 w-full md:w-auto">
+                    Katalog Laptop Pilihan
+                </h2>
+                
+                <div class="flex flex-col sm:flex-row w-full md:w-auto gap-3 items-center">
+                    <!-- Form Pencarian -->
+                    <form action="/" method="GET" class="flex w-full sm:w-auto gap-2">
+                        <% if (typeof currentKategori !== 'undefined' && currentKategori && currentKategori !== 'Semua') { %>
+                            <input type="hidden" name="kategori" value="<%= currentKategori %>">
+                        <% } %>
+                        <input type="text" name="search" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>" placeholder="Cari nama, prosesor..." class="w-full sm:w-56 bg-slate-800 border border-slate-700 rounded-lg p-2 text-white focus:border-cyan-400 focus:outline-none text-sm">
+                        <button type="submit" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition">Cari</button>
+                        
+                        <!-- Tombol Reset -->
+                        <% if ((typeof searchQuery !== 'undefined' && searchQuery) || (typeof currentKategori !== 'undefined' && currentKategori !== 'Semua')) { %>
+                            <a href="/" class="bg-rose-500/20 text-rose-400 hover:bg-rose-500 hover:text-white font-bold py-2 px-3 rounded-lg text-sm transition flex items-center" title="Reset Filter">✕</a>
+                        <% } %>
+                    </form>
 
-    
+                   
