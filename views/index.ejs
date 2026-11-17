@@ -1,2 +1,17 @@
-<!DOCTYPE html>
-<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Animasi pulsa halus untuk widget chat */
+        @keyframes gentle-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .ai-pulse {
+            animation: gentle-pulse 3s infinite ease-in-out;
+        }
+    </style>
