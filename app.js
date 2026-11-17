@@ -5,6 +5,7 @@ const config = require('./config/appConfig');
 const loggerMiddleware = require('./middlewares/loggerMiddleware');
 const apiRoutes = require('./routes/apiRoutes');
 const webRoutes = require('./routes/webRoutes');
+const chatRoutes = require('./routes/chat.routes');
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
 
 // Registrasi Routes
+app.use('/api/chat', chatRoutes);
 app.use('/api', apiRoutes);
 app.use('/', webRoutes);
 
