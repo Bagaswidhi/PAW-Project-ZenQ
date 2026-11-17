@@ -2,20 +2,21 @@ const ProductModel = require('../models/productModel');
 const { cleanBody, validateProduct } = require('../utils/validateProduct');
 const { removeImage, uploadedPath } = require('../utils/filehelper');
 
+// GET /api/status
 const getStatus = (req, res) => {
   res.status(200).json({
     status: "success",
-    message: "Server ZenQ API berjalan aktif",
-    database: "PostgreSQL",
+    message: "Server ZenQ API berjalan dengan baik",
     timestamp: new Date().toISOString()
   });
 };
 
+// GET /api/produk
 const getProducts = async (req, res) => {
   try {
     const { kategori, search } = req.query;
     const products = await ProductModel.getAll({ kategori, search });
-    
+
     res.status(200).json({
       status: "success",
       total: products.length,
@@ -24,17 +25,18 @@ const getProducts = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: "Gagal mengambil data produk dari database",
+      message: "Gagal mengambil data produk",
       error: error.message
     });
   }
 };
 
+// GET /api/produk/:id
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await ProductModel.getById(id);
-    
+
     if (!product) {
       return res.status(404).json({
         status: "fail",
@@ -55,7 +57,6 @@ const getProductById = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
 // POST /api/produk (JSON atau multipart/form-data dengan field file "gambar")
 const createProduct = async (req, res) => {
   const gambar = uploadedPath(req);
@@ -72,31 +73,13 @@ const createProduct = async (req, res) => {
     }
 
     const newProduct = await ProductModel.create({ ...data, gambar });
-=======
-// POST /api/produk
-const createProduct = async (req, res) => {
-  try {
-    const { nama, kategori, prosesor, ram, storage, harga, stok } = req.body;
-
-    if (!nama || !kategori || !harga || !stok) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Field nama, kategori, harga, dan stok wajib diisi"
-      });
-    }
-
-    const newProduct = await ProductModel.create(req.body);
->>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
     res.status(201).json({
       status: "success",
       message: "Produk berhasil ditambahkan ke database",
       data: newProduct
     });
   } catch (error) {
-<<<<<<< HEAD
     removeImage(gambar);
-=======
->>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
     res.status(500).json({
       status: "error",
       message: "Gagal menambah produk",
@@ -105,30 +88,21 @@ const createProduct = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
 // PUT /api/produk/:id (JSON atau multipart/form-data dengan field file "gambar")
 const updateProduct = async (req, res) => {
   const newImage = uploadedPath(req);
-=======
-// PUT /api/produk/:id
-const updateProduct = async (req, res) => {
->>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
   try {
     const { id } = req.params;
     const existing = await ProductModel.getById(id);
 
     if (!existing) {
-<<<<<<< HEAD
       removeImage(newImage);
-=======
->>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
       return res.status(404).json({
         status: "fail",
         message: `Produk dengan ID ${id} tidak ditemukan`
       });
     }
 
-<<<<<<< HEAD
     const merged = { ...existing, ...cleanBody(req.body), gambar: newImage || existing.gambar };
     const errors = validateProduct(merged);
 
@@ -143,19 +117,13 @@ const updateProduct = async (req, res) => {
     const updatedProduct = await ProductModel.update(id, merged);
     if (newImage) removeImage(existing.gambar); // hapus gambar lama setelah berhasil diganti
 
-=======
-    const updatedProduct = await ProductModel.update(id, { ...existing, ...req.body });
->>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
     res.status(200).json({
       status: "success",
       message: "Data produk berhasil diperbarui",
       data: updatedProduct
     });
   } catch (error) {
-<<<<<<< HEAD
     removeImage(newImage);
-=======
->>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
     res.status(500).json({
       status: "error",
       message: "Gagal memperbarui produk",
@@ -177,11 +145,8 @@ const deleteProduct = async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
     removeImage(deletedProduct.gambar);
 
-=======
->>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
     res.status(200).json({
       status: "success",
       message: "Produk berhasil dihapus dari database",
