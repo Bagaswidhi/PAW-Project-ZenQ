@@ -7,12 +7,14 @@
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col justify-between relative">
 
     <!-- Navbar -->
-    <nav class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
-        <a href="/" class="text-xl font-bold text-cyan-400">ZenQ Store</a>
-        <div class="flex space-x-6 text-sm font-medium">
+    <nav class="bg-slate-800/80 backdrop-blur border-b border-slate-700 sticky top-0 z-40 px-6 py-4 flex justify-between items-center">
+        <a href="/" class="text-xl font-bold text-cyan-400 flex items-center gap-2">
+            <span>💻</span> ZenQ Store
+        </a>
+        <div class="flex items-center space-x-6 text-sm font-medium">
             <a href="/" class="text-slate-300 hover:text-cyan-400 transition">Beranda</a>
             <a href="/api/status" target="_blank" class="text-slate-300 hover:text-cyan-400 transition">API Status</a>
             <a href="/api/produk" target="_blank" class="text-slate-300 hover:text-cyan-400 transition">API Produk</a>
@@ -93,15 +95,192 @@
                 <a href="/api/produk/<%= product.id %>" target="_blank" class="w-full sm:w-auto text-center px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-lg text-sm transition">
                     Lihat Data JSON (API)
                 </a>
+                <button type="button" onclick="askAboutThisProduct('<%= product.nama %>')" class="w-full sm:w-auto text-center px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <span>🤖</span> Tanya AI tentang Laptop Ini
+                </button>
             </div>
         </div>
     </main>
 
+    <!-- ======================================================== -->
+    <!-- FLOATING ZENQ AI CHATBOT WIDGET                           -->
+    <!-- ======================================================== -->
+    <div id="aiChatWrapper" class="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        <!-- Jendela Percakapan Chatbot -->
+        <div id="aiChatBox" class="hidden mb-3 w-[calc(100vw-2rem)] sm:w-96 h-[520px] max-h-[80vh] bg-slate-800/95 border border-cyan-500/40 rounded-2xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-300">
+            <!-- Header Chat -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border-b border-slate-700/80 p-3.5 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="relative w-9 h-9 rounded-full bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-lg">
+                        🤖
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 border-2 border-slate-900 rounded-full"></span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm text-white">ZenQ AI Assistant</h4>
+                        <p class="text-[11px] text-cyan-400 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Online • Rekomendasi Laptop
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button type="button" onclick="toggleChat()" class="text-slate-400 hover:text-white p-1.5 rounded-lg text-sm font-bold" title="Tutup Chat">
+                        ✕
+                    </button>
+                </div>
+            </div>
+
+            <!-- Area Pesan -->
+            <div id="aiChatMessages" class="flex-1 p-4 overflow-y-auto space-y-3 text-xs leading-relaxed">
+                <div class="flex items-start gap-2.5">
+                    <div class="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-xs shrink-0 mt-0.5">
+                        🤖
+                    </div>
+                    <div class="bg-slate-700/60 border border-slate-600/50 text-slate-100 p-3 rounded-2xl rounded-tl-none max-w-[85%] space-y-2">
+                        <p>Halo! 👋 Tanyakan apapun tentang spesifikasi atau perbandingan laptop ini!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Input Chat -->
+            <form id="aiChatForm" onsubmit="handleSendChat(event)" class="p-3 bg-slate-900/90 border-t border-slate-700/80 flex gap-2 items-center">
+                <input type="text" id="aiChatInput" placeholder="Tanyakan seputar laptop ZenQ... (Enter)" autocomplete="off" required class="flex-1 bg-slate-800 border border-slate-700 text-white text-xs rounded-xl px-3.5 py-2.5 focus:border-cyan-400 focus:outline-none">
+                <button type="submit" id="aiChatSubmitBtn" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center justify-center shrink-0">
+                    Kirim
+                </button>
+            </form>
+        </div>
+
+        <!-- Tombol Pemicu Floating Action Button -->
+        <button id="aiChatTriggerBtn" onclick="toggleChat()" class="group relative flex items-center gap-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold px-4 py-3 rounded-full shadow-xl shadow-cyan-500/25 transition-all transform hover:scale-105 active:scale-95">
+            <span class="text-xl">🤖</span>
+            <span class="text-xs font-extrabold tracking-wide text-slate-950 hidden sm:inline">Tanya ZenQ AI</span>
+        </button>
+    </div>
+
+    <!-- Script Logika Chatbot -->
+    <script>
+        const aiChatBox = document.getElementById('aiChatBox');
+        const aiChatMessages = document.getElementById('aiChatMessages');
+        const aiChatInput = document.getElementById('aiChatInput');
+        const aiChatSubmitBtn = document.getElementById('aiChatSubmitBtn');
+
+        function toggleChat() {
+            const isHidden = aiChatBox.classList.contains('hidden');
+            if (isHidden) {
+                aiChatBox.classList.remove('hidden');
+                setTimeout(() => aiChatInput.focus(), 150);
+            } else {
+                aiChatBox.classList.add('hidden');
+            }
+        }
+
+        function askAboutThisProduct(productName) {
+            if (aiChatBox.classList.contains('hidden')) {
+                toggleChat();
+            }
+            aiChatInput.value = `Jelaskan kelebihan dan spesifikasi lengkap laptop ${productName}`;
+            document.getElementById('aiChatForm').dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            let html = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/^[•*-]\s+(.+)$/gm, '<div class="flex items-start gap-1.5 my-0.5"><span class="text-cyan-400">•</span><span>$1</span></div>');
+            html = html.replace(/\n/g, '<br>');
+            return html;
+        }
+
+        async function handleSendChat(e) {
+            e.preventDefault();
+            const message = aiChatInput.value.trim();
+            if (!message) return;
+
+            appendUserMessage(message);
+            aiChatInput.value = '';
+            aiChatInput.disabled = true;
+            aiChatSubmitBtn.disabled = true;
+
+            const typingIndicator = appendTypingIndicator();
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const result = await res.json();
+                typingIndicator.remove();
+
+                if (res.ok && result.success && result.data && result.data.reply) {
+                    appendBotMessage(result.data.reply);
+                } else {
+                    const errMsg = (result && result.message) ? result.message : 'Maaf, gagal mendapatkan respons dari asisten AI.';
+                    appendBotMessage(`⚠️ ${errMsg}`);
+                }
+            } catch (err) {
+                typingIndicator.remove();
+                appendBotMessage('⚠️ Terjadi gangguan koneksi ke server chatbot.');
+            } finally {
+                aiChatInput.disabled = false;
+                aiChatSubmitBtn.disabled = false;
+                aiChatInput.focus();
+                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+            }
+        }
+
+        function appendUserMessage(text) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex justify-end';
+            wrapper.innerHTML = `
+                <div class="bg-gradient-to-r from-cyan-600 to-blue-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-md">
+                    ${formatMarkdown(text)}
+                </div>
+            `;
+            aiChatMessages.appendChild(wrapper);
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }
+
+        function appendBotMessage(text) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex items-start gap-2.5';
+            wrapper.innerHTML = `
+                <div class="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    🤖
+                </div>
+                <div class="bg-slate-700/60 border border-slate-600/50 text-slate-100 p-3 rounded-2xl rounded-tl-none max-w-[85%] leading-relaxed shadow-md">
+                    ${formatMarkdown(text)}
+                </div>
+            `;
+            aiChatMessages.appendChild(wrapper);
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }
+
+        function appendTypingIndicator() {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex items-start gap-2.5';
+            wrapper.innerHTML = `
+                <div class="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-xs shrink-0 mt-0.5">
+                    🤖
+                </div>
+                <div class="bg-slate-700/60 border border-slate-600/50 text-slate-300 px-3.5 py-2.5 rounded-2xl rounded-tl-none flex items-center gap-1.5 text-xs">
+                    <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                    <span class="text-[11px] text-slate-400 ml-1">ZenQ AI sedang mengetik...</span>
+                </div>
+            `;
+            aiChatMessages.appendChild(wrapper);
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+            return wrapper;
+        }
+    </script>
+
     <!-- Footer -->
     <footer class="bg-slate-800/50 border-t border-slate-700/50 py-6 text-center text-slate-400 text-sm">
-        <p>&copy; 2026 ZenQ Store — Tugas Praktikum PPAW Week 7 (MVC, REST API & Logger)</p>
+        <p>&copy; 2026 ZenQ Store — Proyek Pengembangan Aplikasi Web (Express.js, EJS, PostgreSQL & Gemini AI)</p>
     </footer>
 
 </body>
 </html>
-

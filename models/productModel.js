@@ -8,7 +8,11 @@ class ProductModel {
     let paramIndex = 1;
 
     // Filter by Kategori
+<<<<<<< HEAD
     if (filters && filters.kategori) {
+=======
+    if (filters && filters.kategori && filters.kategori.toLowerCase() !== 'semua') {
+>>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
       query += ` AND LOWER(kategori) = LOWER($${paramIndex})`;
       values.push(filters.kategori);
       paramIndex++;
@@ -33,33 +37,57 @@ class ProductModel {
   }
 
   static async create(data) {
+<<<<<<< HEAD
     const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi, gambar } = data;
     const query = `
       INSERT INTO products (nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi, gambar)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+=======
+    const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi } = data;
+    const query = `
+      INSERT INTO products (nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+>>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
       RETURNING *
     `;
     const values = [
       nama, kategori, prosesor, ram, storage, Number(harga),
+<<<<<<< HEAD
       rating ? Number(rating) : 4.5, terjual ? Number(terjual) : 0, Number(stok), deskripsi || '',
       gambar || null
+=======
+      rating ? Number(rating) : 4.5, terjual ? Number(terjual) : 0, Number(stok), deskripsi || ''
+>>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
     ];
     const { rows } = await pool.query(query, values);
     return rows[0];
   }
 
   static async update(id, data) {
+<<<<<<< HEAD
     const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi, gambar } = data;
     const query = `
       UPDATE products
       SET nama = $1, kategori = $2, prosesor = $3, ram = $4, storage = $5,
           harga = $6, rating = $7, terjual = $8, stok = $9, deskripsi = $10, gambar = $11
       WHERE id = $12
+=======
+    const { nama, kategori, prosesor, ram, storage, harga, rating, terjual, stok, deskripsi } = data;
+    const query = `
+      UPDATE products
+      SET nama = $1, kategori = $2, prosesor = $3, ram = $4, storage = $5,
+          harga = $6, rating = $7, terjual = $8, stok = $9, deskripsi = $10
+      WHERE id = $11
+>>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
       RETURNING *
     `;
     const values = [
       nama, kategori, prosesor, ram, storage, Number(harga),
+<<<<<<< HEAD
       Number(rating), Number(terjual), Number(stok), deskripsi, gambar || null, id
+=======
+      Number(rating), Number(terjual), Number(stok), deskripsi, id
+>>>>>>> ef0b5f9b682ecb052db9c4e7e66a9214729a0064
     ];
     const { rows } = await pool.query(query, values);
     return rows[0];
