@@ -45,27 +45,64 @@ const withTimeout = (promise, ms) =>
     new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini timeout')), ms))
   ]);
 
+// Smart fallback jika API Gemini belum diisi atau kuota habis (mode mock sesuai ketentuan tugas)
+const generateMockRecommendation = async (message) => {
+  const products = await ProductModel.getAll();
+  const lower = message.toLowerCase();
+  let matches = [];
+
+  if (lower.includes('kuliah') || lower.includes('mahasiswa') || lower.includes('belajar')) {
+    matches = products.filter(p => (p.kategori || '').toLowerCase().includes('kuliah'));
+  } else if (lower.includes('editing') || lower.includes('desain') || lower.includes('render')) {
+    matches = products.filter(p => (p.kategori || '').toLowerCase().includes('editing'));
+  } else if (lower.includes('gaming') || lower.includes('game')) {
+    matches = products.filter(p => (p.kategori || '').toLowerCase().includes('gaming'));
+  } else if (lower.includes('murah') || lower.includes('budget') || lower.includes('7') || lower.includes('6')) {
+    matches = [...products].sort((a, b) => Number(a.harga) - Number(b.harga));
+  } else {
+    matches = products.filter(p => lower.includes((p.nama || '').toLowerCase().split(' ')[0]));
+  }
+
+  if (matches.length === 0) {
+    matches = products.slice(0, 3);
+  }
+
+  const list = matches.slice(0, 3).map(p => 
+    `• **${p.nama}** (${p.kategori})\n  Spesifikasi: ${p.prosesor} | RAM ${p.ram} | ${p.storage}\n  Harga: Rp ${Number(p.harga).toLocaleString('id-ID')} (Stok: ${p.stok} unit, ⭐ ${p.rating})`
+  ).join('\n\n');
+
+  return `Halo! Saya ZenQ AI Assistant. Berikut rekomendasi laptop yang paling sesuai dari katalog kami:\n\n${list}\n\nSilakan klik tombol "Detail Produk" pada katalog untuk melihat spesifikasi lengkap!`;
+};
+
 const askGemini = async (message) => {
-  if (!ai) throw new Error('GEMINI_API_KEY belum dikonfigurasi');
+  if (!ai) {
+    console.warn('[INFO] GEMINI_API_KEY belum dikonfigurasi, menggunakan Smart Mock Recommendation.');
+    return await generateMockRecommendation(message);
+  }
 
-  const productContext = await buildProductContext();
+  try {
+    const productContext = await buildProductContext();
 
-  const response = await withTimeout(
-    ai.models.generateContent({
-      model: MODEL,
-      contents: message, // pesan pengguna dikirim sebagai konten biasa
-      config: {
-        systemInstruction: buildSystemInstruction(productContext), // aturan dikirim terpisah
-        temperature: 0.4,
-        maxOutputTokens: 600
-      }
-    }),
-    TIMEOUT_MS
-  );
+    const response = await withTimeout(
+      ai.models.generateContent({
+        model: MODEL,
+        contents: message, // pesan pengguna dikirim sebagai konten biasa
+        config: {
+          systemInstruction: buildSystemInstruction(productContext), // aturan dikirim terpisah
+          temperature: 0.4,
+          maxOutputTokens: 600
+        }
+      }),
+      TIMEOUT_MS
+    );
 
-  const reply = response && response.text ? response.text.trim() : '';
-  if (!reply) throw new Error('Respons kosong dari Gemini');
-  return reply;
+    const reply = response && response.text ? response.text.trim() : '';
+    if (!reply) throw new Error('Respons kosong dari Gemini');
+    return reply;
+  } catch (error) {
+    console.warn('[WARN] Gagal menghubungi Gemini API, beralih ke Smart Mock Recommendation:', error.message);
+    return await generateMockRecommendation(message);
+  }
 };
 
 module.exports = { askGemini, buildSystemInstruction };
