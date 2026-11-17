@@ -23,7 +23,7 @@ const renderDetailPage = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await ProductModel.getById(id);
-    
+
     if (!product) {
       return res.status(404).render('404', {
         title: 'Produk Tidak Ditemukan - ZenQ Store',

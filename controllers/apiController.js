@@ -1,20 +1,21 @@
 const ProductModel = require('../models/productModel');
 const { cleanBody, validateProduct } = require('../utils/validateProducts');
 
+// GET /api/status
 const getStatus = (req, res) => {
   res.status(200).json({
     status: "success",
-    message: "Server ZenQ API berjalan aktif",
-    database: "PostgreSQL",
+    message: "Server ZenQ API berjalan dengan baik",
     timestamp: new Date().toISOString()
   });
 };
 
+// GET /api/produk
 const getProducts = async (req, res) => {
   try {
     const { kategori, search } = req.query;
     const products = await ProductModel.getAll({ kategori, search });
-    
+
     res.status(200).json({
       status: "success",
       total: products.length,
@@ -23,17 +24,18 @@ const getProducts = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: "error",
-      message: "Gagal mengambil data produk dari database",
+      message: "Gagal mengambil data produk",
       error: error.message
     });
   }
 };
 
+// GET /api/produk/:id
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await ProductModel.getById(id);
-    
+
     if (!product) {
       return res.status(404).json({
         status: "fail",
