@@ -4,10 +4,10 @@ const renderHomePage = async (req, res) => {
   try {
     // Tangkap query search dan kategori dari URL browser
     const { search, kategori } = req.query;
-    
+
     // Lempar query tersebut ke Model
     const products = await ProductModel.getAll({ search, kategori });
-    
+
     res.render('index', {
       title: 'ZenQ - Teman Pilih Laptop',
       products: products,
@@ -23,7 +23,7 @@ const renderDetailPage = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await ProductModel.getById(id);
-    
+
     if (!product) {
       return res.status(404).render('404', {
         title: 'Produk Tidak Ditemukan - ZenQ Store',
