@@ -2,13 +2,13 @@
 require('dotenv').config();
 const { GoogleGenAI } = require('@google/genai');
 
-const apiKey = process.env.GEMINI_API_KEY;
+const apiKey = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : '';
 
 if (!apiKey) {
   console.warn('[WARNING] GEMINI_API_KEY belum diisi di file .env - fitur AI Assistant tidak akan berfungsi.');
 }
 
-const fallbackRaw = process.env.GEMINI_FALLBACK_MODELS || process.env.GEMINI_FALLBACK_MODEL || '';
+const fallbackRaw = process.env.GEMINI_FALLBACK_MODELS || process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.0-flash,gemini-1.5-flash';
 const FALLBACK_MODELS = fallbackRaw
   .split(',')
   .map((m) => m.trim())
@@ -16,7 +16,7 @@ const FALLBACK_MODELS = fallbackRaw
 
 module.exports = {
   ai: apiKey ? new GoogleGenAI({ apiKey }) : null,
-  MODEL: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+  MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   FALLBACK_MODELS,
   MAX_MESSAGE_LENGTH: 500,
   TIMEOUT_MS: 25000

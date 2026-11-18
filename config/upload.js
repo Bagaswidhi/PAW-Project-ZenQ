@@ -2,7 +2,7 @@
 // sedangkan database hanya menyimpan path-nya (kolom products.gambar).
 const multer = require('multer');
 const crypto = require('crypto');
-const { UPLOAD_DIR } = require('../utils/fileHelper');
+const { UPLOAD_DIR } = require('../utils/filehelper');
 
 const EXT_BY_MIME = {
   'image/jpeg': '.jpg',

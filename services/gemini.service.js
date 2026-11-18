@@ -4,8 +4,19 @@ const ProductModel = require('../models/productModel');
 
 // Ambil data produk dari database lalu ubah jadi teks context untuk AI
 const buildProductContext = async () => {
-  const products = await ProductModel.getAll();
-  if (products.length === 0) return { contextText: '(Belum ada produk di katalog.)', products: [] };
+  let products;
+  try {
+    products = await ProductModel.getAll();
+  } catch (dbError) {
+    console.error('[ERROR] Gagal membaca data produk dari database PostgreSQL:', dbError.message);
+    const err = new Error('Database katalog sedang tidak dapat diakses.');
+    err.isDatabaseError = true;
+    throw err;
+  }
+
+  if (!products || products.length === 0) {
+    return { contextText: '(Saat ini belum ada produk laptop di database katalog ZenQ Store.)', products: [] };
+  }
 
   const contextText = products
     .map((p) =>

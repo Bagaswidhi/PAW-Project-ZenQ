@@ -39,12 +39,13 @@ PAW-Project-ZenQ/
 ├── routes/               # Routing aplikasi (apiRoutes.js, chat.routes.js, webRoutes.js)
 ├── services/             # Integrasi pihak ketiga / AI (gemini.service.js)
 ├── utils/                # Fungsi utilitas (dateFormatter.js)
-├── views/                # Template tampilan EJS (index.ejs, detail.ejs, 404.ejs)
+├── views/                # Template tampilan EJS (index.ejs, detail.ejs, 404.ejs, partials/)
 ├── .env.example          # Template konfigurasi environment
 ├── .gitignore            # Berkas pengecualian Git
 ├── app.js                # Titik masuk utama aplikasi (Entry Point)
 ├── package.json          # Konfigurasi dependensi proyek
-├── shcema.sql            # Skema basis data PostgreSQL
+├── Database/             # Berkas skema basis data PostgreSQL
+│   └── schema.sql        # Skema tabel products dan seed data awal
 └── README.md             # Dokumentasi proyek
 ```
 
@@ -122,7 +123,10 @@ GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ### 3. Setup Basis Data PostgreSQL
-Import tabel dan data awal dari file `shcema.sql` ke database `zenq_db` pada PostgreSQL.
+Import tabel dan data awal dari file `Database/schema.sql` ke database `zenq_db` pada PostgreSQL:
+```bash
+psql -U postgres -d zenq_db -f Database/schema.sql
+```
 
 ### 4. Jalankan Server
 ```bash
